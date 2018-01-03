@@ -1,25 +1,27 @@
 package lab.zlren.mall.common.response;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 
 /**
+ * 统一返回格式封装
+ *
  * @author zlren
  * @date 2018-01-02
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 @Slf4j
-public class Result {
+public class Result<T> extends CodeMsg {
+    private T data;
 
-    private Integer code;
-    private String msg;
-    private Object data;
+    public Result(CodeMsg codeMsg, T data) {
+        this(codeMsg.getCode(), codeMsg.getMsg(), data);
+    }
 
-    public Result(Integer code, String msg, Object data) {
-        this.code = code;
-        this.msg = msg;
+    private Result(Integer code, String msg, T data) {
+        super(code, msg);
         this.data = data;
-
-        log.info("{}", this);
     }
 }
