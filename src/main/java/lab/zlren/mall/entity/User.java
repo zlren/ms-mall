@@ -8,6 +8,8 @@ import lombok.experimental.Accessors;
 import java.io.Serializable;
 
 /**
+ * User实体类
+ *
  * @author zlren
  * @since 2018-01-03
  */
@@ -19,5 +21,6 @@ public class User implements Serializable {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+
     private String name;
 }

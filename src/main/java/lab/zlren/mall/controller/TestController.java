@@ -1,5 +1,6 @@
 package lab.zlren.mall.controller;
 
+import lab.zlren.mall.common.redis.UserKey;
 import lab.zlren.mall.common.response.Result;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.service.RedisService;
@@ -44,8 +45,16 @@ public class TestController {
 
     @GetMapping("redis/get")
     @ResponseBody
-    public Result<Long> redis() {
-        Long aLong = redisService.get("key1", Long.class);
-        return resultService.success(aLong);
+    public Result<User> redis() {
+        User user = redisService.get(UserKey.getById, String.valueOf(123), User.class);
+        return resultService.success(user);
+    }
+
+    @GetMapping("redis/set")
+    @ResponseBody
+    public Result<String> redisSet() {
+        int id = 123;
+        String s = redisService.set(UserKey.getById, String.valueOf(123), new User().setId(id));
+        return resultService.success(s);
     }
 }

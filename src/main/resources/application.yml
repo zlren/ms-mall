@@ -28,7 +28,8 @@ mybatis-plus:
   typeAliasesPackage: lab.zlren.mall.entity
 
 redis:
-  host: 10.109.246.66
+#  host: 10.109.246.66
+  host: 118.89.227.189
   port: 6379
   timeout: 3
   poolMaxTotal: 10
