@@ -26,3 +26,11 @@ mybatis-plus:
     id-type: 2
     refresh-mapper: false
   typeAliasesPackage: lab.zlren.mall.entity
+
+redis:
+  host: 10.109.246.66
+  port: 6379
+  timeout: 3
+  poolMaxTotal: 10
+  poolMaxIdle: 10
+  poolMaxWait: 3

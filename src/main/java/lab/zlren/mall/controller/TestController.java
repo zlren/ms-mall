@@ -2,6 +2,7 @@ package lab.zlren.mall.controller;
 
 import lab.zlren.mall.common.response.Result;
 import lab.zlren.mall.entity.User;
+import lab.zlren.mall.service.RedisService;
 import lab.zlren.mall.service.ResultService;
 import lab.zlren.mall.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class TestController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private RedisService redisService;
+
     @GetMapping("test")
     @ResponseBody
     public Result<String> test() {
@@ -36,5 +40,12 @@ public class TestController {
     public String thy(Model model) {
         model.addAttribute("name", "zlren");
         return "hello";
+    }
+
+    @GetMapping("redis/get")
+    @ResponseBody
+    public Result<Long> redis() {
+        Long aLong = redisService.get("key1", Long.class);
+        return resultService.success(aLong);
     }
 }
