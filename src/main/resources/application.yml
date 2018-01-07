@@ -3,7 +3,7 @@ server:
 
 logging:
   level.lab.zlren.mall.mapper: debug
-  level: info
+  level: debug
 
 spring:
   datasource:

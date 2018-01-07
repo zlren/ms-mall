@@ -33,7 +33,7 @@ public class TestController {
     @GetMapping("test")
     @ResponseBody
     public Result<String> test() {
-        this.userService.insert(new User().setId(1).setName("zlren"));
+        this.userService.insert(new User().setId(123L).setNickname("zlren"));
         return resultService.success();
     }
 
@@ -53,7 +53,7 @@ public class TestController {
     @GetMapping("redis/set")
     @ResponseBody
     public Result<String> redisSet() {
-        int id = 123;
+        long id = 123;
         String s = redisService.set(UserKey.getById, String.valueOf(123), new User().setId(id));
         return resultService.success(s);
     }

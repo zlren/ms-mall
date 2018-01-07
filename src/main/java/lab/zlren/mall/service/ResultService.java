@@ -13,15 +13,34 @@ import org.springframework.stereotype.Service;
 @Service
 public class ResultService {
 
+    /**
+     * 成功
+     *
+     * @param <T>
+     * @return
+     */
     public <T> Result<T> success() {
         return new Result<>(CodeMsg.SUCCESS, null);
     }
 
+    /**
+     * 成功
+     *
+     * @param data
+     * @param <T>
+     * @return
+     */
     public <T> Result<T> success(T data) {
         return new Result<>(CodeMsg.SUCCESS, data);
     }
 
-    public <T> Result<T> failure(String msg) {
-        return new Result<>(CodeMsg.SERVER_ERROR, null);
+    /**
+     * 错误
+     *
+     * @param codeMsg 具体错误信息
+     * @return
+     */
+    public Result<String> failure(CodeMsg codeMsg) {
+        return new Result<>(codeMsg, null);
     }
 }
