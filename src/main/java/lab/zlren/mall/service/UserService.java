@@ -2,13 +2,19 @@ package lab.zlren.mall.service;
 
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import lab.zlren.mall.common.exception.GlobalException;
+import lab.zlren.mall.common.rediskey.TokenKey;
 import lab.zlren.mall.common.response.CodeMsg;
 import lab.zlren.mall.common.vo.LoginVO;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.mapper.UserMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+import java.util.UUID;
 
 /**
  * @author zlren
@@ -16,10 +22,16 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 @Transactional(rollbackFor = Exception.class)
+@Slf4j
 public class UserService extends ServiceImpl<UserMapper, User> {
+
+    public static final String COOKIE_NAME_TOKEN = "TOKEN";
 
     @Autowired
     private Md5Service md5Service;
+
+    @Autowired
+    private RedisService redisService;
 
     /**
      * 登录校验
@@ -27,7 +39,7 @@ public class UserService extends ServiceImpl<UserMapper, User> {
      * @param loginVO 登录参数
      * @return 校验结果
      */
-    public boolean checkLogin(LoginVO loginVO) {
+    public boolean checkLogin(LoginVO loginVO, HttpServletResponse response) {
 
         User user = selectById(Long.valueOf(loginVO.getMobile()));
         if (user == null) {
@@ -40,6 +52,48 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         String password = md5Service.md5(loginVO.getPassword(), user.getSalt());
 
         // 密码匹配与否是结果，而不是异常
-        return password.equals(user.getPassword());
+        if (password.equals(user.getPassword())) {
+            addCookie(response, user);
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * 根据cookie取出对应的user
+     *
+     * @param cookieToken cookie值
+     * @return user
+     */
+    public User getUserByToken(HttpServletResponse response, String cookieToken) {
+        User user = redisService.get(TokenKey.tokenKey, cookieToken, User.class);
+        if (user != null) {
+            addCookie(response, user);
+        }
+
+        return user;
+    }
+
+
+    /**
+     * 存储token、更新token的有效期
+     *
+     * @param response response
+     * @param user     user
+     */
+    private void addCookie(HttpServletResponse response, User user) {
+
+        // TODO 每次生成一个新的token值作为key，这样好吗
+        String token = UUID.randomUUID().toString().replace("-", "");
+
+        // redis存储token，值为这个token背后的user
+        redisService.set(TokenKey.tokenKey, token, user);
+
+        Cookie cookie = new Cookie(COOKIE_NAME_TOKEN, token);
+        cookie.setMaxAge(TokenKey.tokenKey.getExpire());
+        cookie.setPath("/");
+        response.addCookie(cookie);
     }
 }

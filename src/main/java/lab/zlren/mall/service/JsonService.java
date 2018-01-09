@@ -1,7 +1,13 @@
 package lab.zlren.mall.service;
 
-import com.alibaba.fastjson.JSON;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lab.zlren.mall.common.exception.GlobalException;
+import lab.zlren.mall.common.response.CodeMsg;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.io.IOException;
 
 /**
  * @author zlren
@@ -9,6 +15,9 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class JsonService {
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * 序列化
@@ -29,7 +38,11 @@ public class JsonService {
         } else if (beanClass == long.class || beanClass == Long.class) {
             return String.valueOf(bean);
         } else {
-            return JSON.toJSONString(bean);
+            try {
+                return objectMapper.writeValueAsString(bean);
+            } catch (JsonProcessingException e) {
+                throw new GlobalException(CodeMsg.JSON_ERROR);
+            }
         }
     }
 
@@ -55,7 +68,11 @@ public class JsonService {
         } else if (clazz == long.class || clazz == Long.class) {
             return (T) Long.valueOf(str);
         } else {
-            return JSON.parseObject(str, clazz);
+            try {
+                return objectMapper.readValue(str, clazz);
+            } catch (IOException e) {
+                throw new GlobalException(CodeMsg.JSON_ERROR);
+            }
         }
     }
 }

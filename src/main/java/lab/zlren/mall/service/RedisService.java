@@ -1,6 +1,6 @@
 package lab.zlren.mall.service;
 
-import lab.zlren.mall.common.redis.KeyPrefix;
+import lab.zlren.mall.common.rediskey.KeyPrefix;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import redis.clients.jedis.Jedis;
@@ -39,7 +39,7 @@ public class RedisService {
     /**
      * set
      *
-     * @param prefix 前缀，包含过期时间
+     * @param prefix 前缀，包含过期时间，单位秒
      * @param key    key
      * @param value  value
      * @param <T>    类型

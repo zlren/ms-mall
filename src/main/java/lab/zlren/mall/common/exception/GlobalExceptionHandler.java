@@ -28,6 +28,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(value = Exception.class)
     public Result<String> exceptionHandler(Exception e) {
+        // e.printStackTrace();
         if (e instanceof GlobalException) {
             return resultService.failure(((GlobalException) e).getCodeMsg());
         } else if (e instanceof BindException) {

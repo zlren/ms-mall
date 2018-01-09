@@ -23,12 +23,14 @@ public class CodeMsg {
     public static CodeMsg SERVER_ERROR = new CodeMsg(500, "server-error");
     public static CodeMsg PARAMS_ERROR = new CodeMsg(5001, "参数异常");
     public static CodeMsg VALID_BIND_ERROR = new CodeMsg(5002, "参数绑定异常：%s");
+    public static CodeMsg JSON_ERROR = new CodeMsg(5003, "JSON转换错误");
 
     /**
      * 鉴权模块
      */
     public static CodeMsg PASSWORD_ERROR = new CodeMsg(500100, "密码错误");
-    public static CodeMsg USER_NOT_EXIST = new CodeMsg(500101, "用户不存在");
+    public static CodeMsg NOT_LOGIN = new CodeMsg(500101, "未登录");
+    public static CodeMsg USER_NOT_EXIST = new CodeMsg(500102, "用户不存在");
 
     /**
      * 商品模块

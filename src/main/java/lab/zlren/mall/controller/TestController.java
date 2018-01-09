@@ -1,6 +1,6 @@
 package lab.zlren.mall.controller;
 
-import lab.zlren.mall.common.redis.UserKey;
+import lab.zlren.mall.common.rediskey.UserKey;
 import lab.zlren.mall.common.response.Result;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.service.RedisService;

@@ -12,6 +12,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * @author zlren
  * @date 2018-01-06
@@ -45,9 +47,10 @@ public class LoginController {
      */
     @RequestMapping("do_login")
     @ResponseBody
-    public Result<String> doLogin(@Validated LoginVO loginVO) {
+    public Result<String> doLogin(@Validated LoginVO loginVO,
+                                  HttpServletResponse response) {
 
-        if (userService.checkLogin(loginVO)) {
+        if (userService.checkLogin(loginVO, response)) {
             return resultService.success();
         }
 
