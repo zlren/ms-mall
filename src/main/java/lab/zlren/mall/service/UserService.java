@@ -53,7 +53,13 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
         // 密码匹配与否是结果，而不是异常
         if (password.equals(user.getPassword())) {
-            addCookie(response, user);
+            // 第一次为这个用户生成一个token，并且这个token值在redis中不重复
+            String token = UUID.randomUUID().toString().replace("-", "");
+            while (redisService.exists(TokenKey.tokenKey, token)) {
+                token = UUID.randomUUID().toString().replace("-", "");
+            }
+
+            addCookie(response, token, user);
             return true;
         }
 
@@ -64,13 +70,13 @@ public class UserService extends ServiceImpl<UserMapper, User> {
     /**
      * 根据cookie取出对应的user
      *
-     * @param cookieToken cookie值
+     * @param cookieToken cookie中对应的TOKEN的值
      * @return user
      */
     public User getUserByToken(HttpServletResponse response, String cookieToken) {
         User user = redisService.get(TokenKey.tokenKey, cookieToken, User.class);
         if (user != null) {
-            addCookie(response, user);
+            addCookie(response, cookieToken, user);
         }
 
         return user;
@@ -79,14 +85,13 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
     /**
      * 存储token、更新token的有效期
+     * 存储会存到response和redis中
      *
      * @param response response
+     * @param token    cookie中的TOKEN对应的值
      * @param user     user
      */
-    private void addCookie(HttpServletResponse response, User user) {
-
-        // TODO 每次生成一个新的token值作为key，这样好吗
-        String token = UUID.randomUUID().toString().replace("-", "");
+    private void addCookie(HttpServletResponse response, String token, User user) {
 
         // redis存储token，值为这个token背后的user
         redisService.set(TokenKey.tokenKey, token, user);
