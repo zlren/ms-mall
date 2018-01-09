@@ -1,4 +1,4 @@
-package lab.zlren.mall.service;
+package lab.zlren.mall.service.entity;
 
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import lab.zlren.mall.common.exception.GlobalException;
@@ -7,6 +7,8 @@ import lab.zlren.mall.common.response.CodeMsg;
 import lab.zlren.mall.common.vo.LoginVO;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.mapper.UserMapper;
+import lab.zlren.mall.service.util.Md5Service;
+import lab.zlren.mall.service.util.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

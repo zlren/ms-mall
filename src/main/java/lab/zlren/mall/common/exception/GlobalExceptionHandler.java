@@ -2,7 +2,7 @@ package lab.zlren.mall.common.exception;
 
 import lab.zlren.mall.common.response.CodeMsg;
 import lab.zlren.mall.common.response.Result;
-import lab.zlren.mall.service.ResultService;
+import lab.zlren.mall.service.util.ResultService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindException;
 import org.springframework.validation.ObjectError;

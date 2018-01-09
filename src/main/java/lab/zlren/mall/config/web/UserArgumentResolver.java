@@ -3,7 +3,7 @@ package lab.zlren.mall.config.web;
 import lab.zlren.mall.common.exception.GlobalException;
 import lab.zlren.mall.common.response.CodeMsg;
 import lab.zlren.mall.entity.User;
-import lab.zlren.mall.service.UserService;
+import lab.zlren.mall.service.entity.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

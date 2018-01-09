@@ -56,13 +56,55 @@ public class Generator {
         dsc.setUrl("jdbc:mysql://127.0.0.1:3306/seckillmall?characterEncoding=utf8");
         mpg.setDataSource(dsc);
 
-        // 策略配置
+        // 策略配置create table `goods` (
+        // 	`id` bigint(20) not null auto_increment comment '商品id',
+        // 	`goods_name` varchar(16) default null comment '商品名称',
+        // 	`goods_title` varchar(64) default null comment '商品标题',
+        // 	`goods_img` varchar(64) default null comment '商品图片',
+        // 	`goods_detail` longtext comment '商品详情',
+        // 	`goods_price` decimal(10, 2) default '0.00' comment '商品单价',
+        // 	`goods_stock` int(11) default '0' comment '商品库存，-1表示没有限制',
+        // 	primary key (`id`)
+        // ) engine=InnoDB default charset=utf8mb4;
+        //
+        // create table `miaosha_goods` (
+        // 	`id` bigint(20) not null auto_increment comment '主键id',
+        // 	`goods_id` bigint(20) default null comment '商品id',
+        // 	`miaosha_price` decimal(10, 2) default '0.00' comment '秒杀价格',
+        // 	`stock_count` int(11) default 0 comment '库存数量',
+        // 	`start_date` datetime default null comment '秒杀开始时间',
+        // 	`end_date` datetime default null comment '秒杀结束时间',
+        // 	primary key (`id`)
+        // ) engine=InnoDB default charset=utf8mb4;
+        //
+        // create table `order_info` (
+        // 	`id` bigint(20) not null auto_increment comment '订单id',
+        // 	`user_id` bigint(20) default null comment '用户id',
+        // 	`goods_id` bigint(20) default null comment '商品id',
+        // 	`delivery_add_id` bigint(20) default null comment '收货地址id',
+        // 	`goods_name` varchar(64) default null comment '冗余商品名称',
+        // 	`goods_count` int(11) default '0' comment '商品库存',
+        // 	`goods_price` decimal(10, 2) default '0.00' comment '商品单价',
+        // 	`order_channel` tinyint(4) default 0 comment '1pc, 2android, 3ios',
+        // 	`status` tinyint(4) default 0 comment '订单状态，0新建未支付，1已支付，2已发货，3已收货，4已退款，5已完成',
+        // 	`create_date` datetime default null comment '订单创建时间',
+        // 	`pay_date` datetime default null comment '支付时间',
+        // 	primary key (`id`)
+        // ) engine=InnoDB default charset=utf8mb4;
+        //
+        // create table `miaosha_order` (
+        // 	`id` bigint(20) not null auto_increment comment '秒杀订单id',
+        // 	`user_id` bigint(20) default null comment '用户id',
+        // 	`order_id` bigint(20) default null comment '订单id',
+        // 	`goods_id` bigint(20) default null comment '商品id',
+        // 	primary key (`id`)
+        // ) engine=InnoDB default charset=utf8mb4;
         StrategyConfig strategy = new StrategyConfig();
         // strategy.setCapitalMode(true);// 全局大写命名 ORACLE 注意
         strategy.setTablePrefix(new String[]{});// 此处可以修改为您的表前缀
         strategy.setNaming(NamingStrategy.underline_to_camel);// 表名生成策略
         // strategy.setInclude(new String[] { "user" }); // 需要生成的表
-        // strategy.setExclude(new String[]{"test"}); // 排除生成的表
+        strategy.setExclude(new String[]{"user"}); // 排除生成的表
         // 自定义实体父类
         // strategy.setSuperEntityClass("com.baomidou.demo.TestEntity");
         // 自定义实体，公共字段

@@ -1,4 +1,4 @@
-import lab.zlren.mall.service.Md5Service;
+import lab.zlren.mall.service.util.Md5Service;
 
 /**
  * @author zlren

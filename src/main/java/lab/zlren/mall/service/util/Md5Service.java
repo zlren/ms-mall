@@ -1,4 +1,4 @@
-package lab.zlren.mall.service;
+package lab.zlren.mall.service.util;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.stereotype.Service;

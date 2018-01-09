@@ -1,4 +1,4 @@
-package lab.zlren.mall.service;
+package lab.zlren.mall.service.util;
 
 import lab.zlren.mall.common.rediskey.KeyPrefix;
 import org.springframework.beans.factory.annotation.Autowired;
