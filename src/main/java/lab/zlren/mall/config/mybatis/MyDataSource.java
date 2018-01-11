@@ -30,8 +30,8 @@ public class MyDataSource {
         hikariDataSource.setUsername(username);
         hikariDataSource.setPassword(password);
         hikariDataSource.setDriverClassName(driverClassName);
-        hikariDataSource.setMaximumPoolSize(5);
-        hikariDataSource.setMinimumIdle(1);
+        hikariDataSource.setMaximumPoolSize(1000);
+        hikariDataSource.setMinimumIdle(100);
 
         return hikariDataSource;
     }

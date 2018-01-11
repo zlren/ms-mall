@@ -16,6 +16,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -70,15 +74,15 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
 
     /**
-     * 根据cookie取出对应的user
+     * 根据token值从redis中取出user
      *
-     * @param cookieToken cookie中对应的TOKEN的值
+     * @param token token值
      * @return user
      */
-    public User getUserByToken(HttpServletResponse response, String cookieToken) {
-        User user = redisService.get(TokenKey.tokenKey, cookieToken, User.class);
+    public User getUserByTokenFromRedis(HttpServletResponse response, String token) {
+        User user = redisService.get(TokenKey.tokenKey, token, User.class);
         if (user != null) {
-            addCookie(response, cookieToken, user);
+            addCookie(response, token, user);
         }
 
         return user;
@@ -103,4 +107,9 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         cookie.setPath("/");
         response.addCookie(cookie);
     }
+
+
+
+
+
 }

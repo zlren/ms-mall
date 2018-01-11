@@ -8,10 +8,14 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @date 2018-01-02
  */
 @SpringBootApplication
-public class SeckillMallApp {
+public class SeckillMallApp { // extends SpringBootServletInitializer
 
     public static void main(String[] args) {
         SpringApplication.run(SeckillMallApp.class, args);
     }
 
+    // @Override
+    // protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+    //     return builder.sources(SeckillMallApp.class);
+    // }
 }

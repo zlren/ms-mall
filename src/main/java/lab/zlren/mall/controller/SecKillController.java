@@ -6,13 +6,13 @@ import lab.zlren.mall.common.vo.GoodsVO;
 import lab.zlren.mall.entity.OrderInfo;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.service.entity.GoodsService;
-
 import lab.zlren.mall.service.entity.MiaoshaGoodsService;
 import lab.zlren.mall.service.entity.OrderInfoService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  */
 @Controller
 @RequestMapping("miaosha")
+@Slf4j
 public class SecKillController {
 
     @Autowired
@@ -33,8 +34,10 @@ public class SecKillController {
     @Autowired
     private MiaoshaGoodsService miaoshaGoodsService;
 
-    @PostMapping("do_miaosha")
+    @GetMapping("do_miaosha")
     public String doMiaoSha(Model model, User user, @RequestParam Long goodsId) {
+
+        log.info("user是：{}", user.getId());
 
         GoodsVO goodsVO = goodsService.getGoodsVOByGoodsId(goodsId);
         if (goodsVO.getStockCount() <= 0) {

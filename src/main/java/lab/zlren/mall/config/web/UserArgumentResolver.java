@@ -1,7 +1,5 @@
 package lab.zlren.mall.config.web;
 
-import lab.zlren.mall.common.exception.GlobalException;
-import lab.zlren.mall.common.response.CodeMsg;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.service.entity.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -39,21 +37,25 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
     @Override
     public Object resolveArgument(MethodParameter methodParameter, ModelAndViewContainer modelAndViewContainer,
-                                  NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) throws Exception {
+                                  NativeWebRequest nativeWebRequest, WebDataBinderFactory webDataBinderFactory) {
 
         HttpServletRequest request = nativeWebRequest.getNativeRequest(HttpServletRequest.class);
         HttpServletResponse response = nativeWebRequest.getNativeResponse(HttpServletResponse.class);
 
+        // request或者cookie中携带token参数都可以
+        String paramToken = request.getParameter(UserService.COOKIE_NAME_TOKEN);
         String cookieToken = getCookieValue(request, UserService.COOKIE_NAME_TOKEN);
 
         // 未登录状态，返回登录页面
-        if (StringUtils.isEmpty(cookieToken)) {
-            log.info("cookie的值为空，用户未登录");
-            throw new GlobalException(CodeMsg.NOT_LOGIN);
+        if (StringUtils.isEmpty(paramToken) && StringUtils.isEmpty(cookieToken)) {
+            log.info("token值为空，用户未登录");
+            // throw new GlobalException(CodeMsg.NOT_LOGIN);
+            return null;
         }
 
-        // 根据cookie取出对应的用户
-        User user = userService.getUserByToken(response, cookieToken);
+        // 取出token值，paramToken的优先级高
+        String token = StringUtils.isEmpty(paramToken) ? cookieToken : paramToken;
+        User user = userService.getUserByTokenFromRedis(response, token);
 
         if (user != null) {
             log.info("当前用户：{}", user);
@@ -62,7 +64,8 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
 
         log.info("无法从redis中查询到用户信息");
 
-        throw new GlobalException(CodeMsg.NOT_LOGIN);
+        // throw new GlobalException(CodeMsg.NOT_LOGIN);
+        return null;
     }
 
     /**
@@ -74,7 +77,12 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
      */
     private String getCookieValue(HttpServletRequest request, String cookieKey) {
 
-        for (Cookie cookie : request.getCookies()) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies == null || cookies.length == 0) {
+            return null;
+        }
+
+        for (Cookie cookie : cookies) {
             if (cookie.getName().equals(cookieKey)) {
                 return cookie.getValue();
             }
