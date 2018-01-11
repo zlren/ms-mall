@@ -1,16 +1,26 @@
 package lab.zlren.mall.controller;
 
+import lab.zlren.mall.common.rediskey.BasePrefix;
+import lab.zlren.mall.common.rediskey.GoodsKey;
 import lab.zlren.mall.common.vo.GoodsVO;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.service.entity.GoodsService;
+import lab.zlren.mall.service.util.RedisService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.thymeleaf.spring4.context.SpringWebContext;
+import org.thymeleaf.spring4.view.ThymeleafViewResolver;
+import org.thymeleaf.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -25,61 +35,118 @@ public class GoodController {
     @Autowired
     private GoodsService goodsService;
 
-    @GetMapping("to_list")
-    public String toGoodsList(Model model, User user) {
+    @Autowired
+    private RedisService redisService;
 
-        List<GoodsVO> goodsVOList = goodsService.getGoodsVOList();
-        model.addAttribute("goodsList", goodsVOList);
+    @Autowired
+    private ThymeleafViewResolver thymeleafViewResolver;
 
-        model.addAttribute("user", user);
-        return "goods_list";
+    @Autowired
+    private ApplicationContext applicationContext;
+
+    /**
+     * 商品列表，这个列表大家看到的都一样，没有与特定用户相关的属性值
+     *
+     * @param model    model
+     * @param user     user
+     * @param request  request
+     * @param response response
+     * @return 商品列表html串
+     */
+    @GetMapping(value = "to_list", produces = "text/html")
+    @ResponseBody
+    public String toGoodsList(Model model, User user, HttpServletRequest request, HttpServletResponse response) {
+
+        String goodsListHtml = redisService.get(GoodsKey.goodsListKey, "", String.class);
+
+        if (StringUtils.isEmpty(goodsListHtml)) {
+
+            List<GoodsVO> goodsVOList = goodsService.getGoodsVOList();
+            model.addAttribute("goodsList", goodsVOList);
+
+            model.addAttribute("user", user);
+
+            goodsListHtml = generatePageHtml(request, response, model, "goods_list", GoodsKey.goodsListKey, "");
+        }
+
+        return goodsListHtml;
     }
 
     /**
      * 商品详情页
      *
-     * @param goodsId id
-     * @param model   model
-     * @param user    user
+     * @param goodsId  id
+     * @param model    model
+     * @param user     user
+     * @param request  request
+     * @param response response
      * @return 详情页
      */
-    @GetMapping("to_detail/{goods_id}")
-    public String getDetail(@PathVariable("goods_id") Long goodsId, Model model, User user) {
+    @GetMapping(value = "to_detail/{goods_id}", produces = "text/html")
+    @ResponseBody
+    public String getDetail(@PathVariable("goods_id") Long goodsId, Model model, User user, HttpServletRequest request,
+                            HttpServletResponse response) {
 
-        GoodsVO goodsVO = goodsService.getGoodsVOByGoodsId(goodsId);
+        String goodsDetailHtml = redisService.get(GoodsKey.goodsDetailKey, String.valueOf(goodsId), String.class);
 
-        model.addAttribute("goods", goodsVO);
+        if (StringUtils.isEmpty(goodsDetailHtml)) {
 
-        long startAt = goodsVO.getStartDate().getTime();
-        long endAt = goodsVO.getEndDate().getTime();
-        long now = System.currentTimeMillis();
+            GoodsVO goodsVO = goodsService.getGoodsVOByGoodsId(goodsId);
 
-        int miaoshaStatus;
-        long remainSeconds;
+            model.addAttribute("goods", goodsVO);
 
-        if (now < startAt) {
-            log.info("秒杀还没开始");
-            // 秒杀还没开始
-            miaoshaStatus = 0;
-            remainSeconds = (startAt - now) / 1000;
+            long startAt = goodsVO.getStartDate().getTime();
+            long endAt = goodsVO.getEndDate().getTime();
+            long now = System.currentTimeMillis();
 
-        } else if (now > endAt) {
-            log.info("秒杀已经结束");
-            // 秒杀已经结束
-            miaoshaStatus = 2;
-            remainSeconds = -1;
-        } else {
-            log.info("正在进行");
-            // 秒杀正在进行
-            miaoshaStatus = 1;
-            remainSeconds = 0;
+            int miaoshaStatus;
+            long remainSeconds;
+
+            if (now < startAt) {
+                log.info("秒杀还没开始");
+                // 秒杀还没开始
+                miaoshaStatus = 0;
+                remainSeconds = (startAt - now) / 1000;
+            } else if (now > endAt) {
+                log.info("秒杀已经结束");
+                // 秒杀已经结束
+                miaoshaStatus = 2;
+                remainSeconds = -1;
+            } else {
+                log.info("正在进行");
+                // 秒杀正在进行
+                miaoshaStatus = 1;
+                remainSeconds = 0;
+            }
+
+            model.addAttribute("miaoshaStatus", miaoshaStatus);
+            model.addAttribute("remainSeconds", remainSeconds);
+
+            model.addAttribute("user", user);
+
+            goodsDetailHtml = generatePageHtml(request, response, model, "goods_detail", GoodsKey.goodsDetailKey,
+                    String.valueOf(goodsId));
         }
 
-        model.addAttribute("miaoshaStatus", miaoshaStatus);
-        model.addAttribute("remainSeconds", remainSeconds);
+        return goodsDetailHtml;
+    }
 
-        model.addAttribute("user", user);
 
-        return "goods_detail";
+    /**
+     * 手动渲染页面，返回html串，并存储到redis
+     *
+     * @param request  request
+     * @param response response
+     * @param model    model
+     * @param page     page
+     * @return 页面渲染后的html串
+     */
+    private String generatePageHtml(HttpServletRequest request, HttpServletResponse response, Model model, String page,
+                                    BasePrefix basePrefix, String key) {
+        SpringWebContext springWebContext = new SpringWebContext(
+                request, response, request.getServletContext(), request.getLocale(), model.asMap(), applicationContext);
+        String pageHtml = thymeleafViewResolver.getTemplateEngine().process(page, springWebContext);
+        redisService.set(basePrefix, key, pageHtml);
+        return pageHtml;
     }
 }

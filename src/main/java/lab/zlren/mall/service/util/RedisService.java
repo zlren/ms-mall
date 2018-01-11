@@ -59,6 +59,21 @@ public class RedisService {
         }
     }
 
+
+    /**
+     * 删除key
+     *
+     * @param prefix prefix
+     * @param key    key
+     * @return 结果
+     */
+    public Long del(KeyPrefix prefix, String key) {
+        try (Jedis jedis = jedisPool.getResource()) {
+            String realKey = prefix.getPrefix() + key;
+            return jedis.del(realKey);
+        }
+    }
+
     /**
      * 判断key是否存在
      *

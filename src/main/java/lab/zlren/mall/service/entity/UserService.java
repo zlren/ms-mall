@@ -3,6 +3,7 @@ package lab.zlren.mall.service.entity;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
 import lab.zlren.mall.common.exception.GlobalException;
 import lab.zlren.mall.common.rediskey.TokenKey;
+import lab.zlren.mall.common.rediskey.UserKey;
 import lab.zlren.mall.common.response.CodeMsg;
 import lab.zlren.mall.common.vo.LoginVO;
 import lab.zlren.mall.entity.User;
@@ -16,13 +17,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.Date;
 import java.util.UUID;
 
 /**
+ * 缓存有用户缓存和token缓存
+ * 用户缓存就是userId对应user序列化后的字符串
+ * token缓存的key是token
+ *
  * @author zlren
  * @date 2018-01-03
  */
@@ -38,6 +39,22 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
     @Autowired
     private RedisService redisService;
+
+    /**
+     * 覆盖自带的selectById，添加缓存逻辑
+     *
+     * @param userId userId
+     * @return user
+     */
+    private User selectById(Long userId) {
+        User user = redisService.get(UserKey.getById, String.valueOf(userId), User.class);
+        if (user == null) {
+            user = super.selectById(userId);
+            redisService.set(UserKey.getById, String.valueOf(userId), user);
+        }
+
+        return user;
+    }
 
     /**
      * 登录校验
@@ -90,6 +107,35 @@ public class UserService extends ServiceImpl<UserMapper, User> {
 
 
     /**
+     * 修改密码
+     *
+     * @param userId          userId
+     * @param networkPassword 前端加密后的结果
+     * @return true or false
+     */
+    public boolean updatePassword(String token, Long userId, String networkPassword) {
+
+        User user = this.selectById(userId);
+        if (user == null) {
+            throw new GlobalException(CodeMsg.USER_NOT_EXIST);
+        }
+
+        // 新建一个对象用于更新，只更新必要字段
+        String newPassword = md5Service.md5(networkPassword, user.getSalt());
+        User userForUpdate = new User().setId(userId).setPassword(newPassword);
+        updateById(userForUpdate);
+
+        // 缓存更新
+        // id缓存直接删掉
+        redisService.del(UserKey.getById, String.valueOf(userId));
+        // token缓存要更新，否则就是未登录了
+        redisService.set(TokenKey.tokenKey, token, user.setPassword(newPassword));
+
+        return true;
+    }
+
+
+    /**
      * 存储token、更新token的有效期
      * 存储会存到response和redis中
      *
@@ -107,9 +153,4 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         cookie.setPath("/");
         response.addCookie(cookie);
     }
-
-
-
-
-
 }
