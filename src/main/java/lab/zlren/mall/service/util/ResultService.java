@@ -40,7 +40,7 @@ public class ResultService {
      * @param codeMsg 具体错误信息
      * @return
      */
-    public Result<String> failure(CodeMsg codeMsg) {
-        return new Result<>(codeMsg, null);
+    public <T> Result<T> failure(CodeMsg codeMsg) {
+        return new Result<>(codeMsg);
     }
 }

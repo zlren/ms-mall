@@ -19,7 +19,7 @@
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
 </head>
 <body>
-<!--<p th:text="'hello:'+${user.nickname}"></p>-->
+
 <div class="panel panel-default">
     <div class="panel-heading">秒杀商品列表</div>
     <table class="table" id="goodslist">
@@ -37,7 +37,7 @@
             <td th:text="${goods.goodsPrice}"></td>
             <td th:text="${goods.miaoshaPrice}"></td>
             <td th:text="${goods.stockCount}"></td>
-            <td><a th:href="'/goods/to_detail/'+${goods.id}">详情</a></td>
+            <td><a th:href="'/goods_detail.htm?goodsId='+${goods.id}">详情</a></td>
         </tr>
     </table>
 </div>

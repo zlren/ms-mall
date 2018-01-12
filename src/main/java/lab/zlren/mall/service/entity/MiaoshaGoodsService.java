@@ -1,12 +1,14 @@
 package lab.zlren.mall.service.entity;
 
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import lab.zlren.mall.common.rediskey.OrderKey;
 import lab.zlren.mall.common.vo.GoodsVO;
-import lab.zlren.mall.entity.Goods;
 import lab.zlren.mall.entity.MiaoshaGoods;
 import lab.zlren.mall.entity.MiaoshaOrder;
 import lab.zlren.mall.entity.OrderInfo;
 import lab.zlren.mall.mapper.MiaoshaGoodsMapper;
+import lab.zlren.mall.service.util.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,9 @@ public class MiaoshaGoodsService extends ServiceImpl<MiaoshaGoodsMapper, Miaosha
     @Autowired
     private GoodsService goodsService;
 
+    @Autowired
+    private RedisService redisService;
+
     /**
      * 具体的秒杀操作，使用service的事务支持
      * 减库存
@@ -46,16 +51,18 @@ public class MiaoshaGoodsService extends ServiceImpl<MiaoshaGoodsMapper, Miaosha
     public OrderInfo miaosha(Long userId, GoodsVO goodsVO) {
 
         // miaosha-goods减库存
-        MiaoshaGoods miaoshaGoods = new MiaoshaGoods()
-                .setId(goodsVO.getId())
-                .setStockCount(goodsVO.getGoodsStock() - 1);
-        miaoshaGoodsService.updateById(miaoshaGoods);
+        MiaoshaGoods miaoshaGoods = new MiaoshaGoods().setStockCount(goodsVO.getStockCount() - 1);
+        EntityWrapper<MiaoshaGoods> ew = new EntityWrapper<>();
+        ew.eq("goods_id", goodsVO.getId());
+        ew.gt(true, "stock_count", 0);
+        miaoshaGoodsService.update(miaoshaGoods, ew);
 
-        // goods减库存
-        Goods goods = new Goods()
-                .setId(goodsVO.getId())
-                .setGoodsStock(goodsVO.getGoodsStock() - 1);
-        goodsService.updateById(goods);
+        // // goods减库存
+        // Goods goods = new Goods().setGoodsStock(goodsVO.getGoodsStock() - 1);
+        // EntityWrapper<Goods> ew2 = new EntityWrapper<>();
+        // ew2.eq("id", goodsVO.getId());
+        // ew2.gt(true, "goods_stock", 0);
+        // goodsService.update(goods, ew2);
 
         // 写入order
         OrderInfo orderInfo = new OrderInfo()
@@ -75,6 +82,9 @@ public class MiaoshaGoodsService extends ServiceImpl<MiaoshaGoodsMapper, Miaosha
                 .setUserId(userId)
                 .setGoodsId(goodsVO.getId());
         miaoshaOrderService.insert(miaoshaOrder);
+
+        // 写入redis的是miaoshaOrder
+        redisService.set(OrderKey.miaoshaOrderKey, userId + "_" + goodsVO.getId(), miaoshaOrder);
 
         return orderInfo;
     }

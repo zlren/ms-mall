@@ -1,7 +1,6 @@
 package lab.zlren.mall.entity;
 
 import com.baomidou.mybatisplus.annotations.TableField;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -25,13 +24,14 @@ public class User implements Serializable {
      */
     private Long id;
     private String nickname;
+
     /**
      * 两次md5
+     * <p>
+     * TODO JsonIgnore 忽略
      */
-    @JsonIgnore
     private String password;
 
-    @JsonIgnore
     private String salt;
     /**
      * 头像，云存储的id

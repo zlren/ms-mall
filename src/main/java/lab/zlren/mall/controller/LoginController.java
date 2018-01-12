@@ -50,6 +50,8 @@ public class LoginController {
     public Result<String> doLogin(@Validated LoginVO loginVO,
                                   HttpServletResponse response) {
 
+        log.info("登录信息：{}", loginVO);
+
         if (userService.checkLogin(loginVO, response)) {
             return resultService.success();
         }

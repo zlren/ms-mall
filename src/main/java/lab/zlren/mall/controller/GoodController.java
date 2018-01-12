@@ -2,10 +2,13 @@ package lab.zlren.mall.controller;
 
 import lab.zlren.mall.common.rediskey.BasePrefix;
 import lab.zlren.mall.common.rediskey.GoodsKey;
+import lab.zlren.mall.common.response.Result;
+import lab.zlren.mall.common.vo.GoodsDetailVO;
 import lab.zlren.mall.common.vo.GoodsVO;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.service.entity.GoodsService;
 import lab.zlren.mall.service.util.RedisService;
+import lab.zlren.mall.service.util.ResultService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -44,6 +47,9 @@ public class GoodController {
     @Autowired
     private ApplicationContext applicationContext;
 
+    @Autowired
+    private ResultService resultService;
+
     /**
      * 商品列表，这个列表大家看到的都一样，没有与特定用户相关的属性值
      *
@@ -75,60 +81,46 @@ public class GoodController {
     /**
      * 商品详情页
      *
-     * @param goodsId  id
-     * @param model    model
-     * @param user     user
-     * @param request  request
-     * @param response response
+     * @param goodsId id
+     * @param user    user
      * @return 详情页
      */
-    @GetMapping(value = "to_detail/{goods_id}", produces = "text/html")
+    @GetMapping(value = "detail/{goodsId}")
     @ResponseBody
-    public String getDetail(@PathVariable("goods_id") Long goodsId, Model model, User user, HttpServletRequest request,
-                            HttpServletResponse response) {
+    public Result<GoodsDetailVO> getDetail(@PathVariable Long goodsId, User user) {
 
-        String goodsDetailHtml = redisService.get(GoodsKey.goodsDetailKey, String.valueOf(goodsId), String.class);
+        GoodsVO goodsVO = goodsService.getGoodsVOByGoodsId(goodsId);
 
-        if (StringUtils.isEmpty(goodsDetailHtml)) {
+        long startAt = goodsVO.getStartDate().getTime();
+        long endAt = goodsVO.getEndDate().getTime();
+        long now = System.currentTimeMillis();
 
-            GoodsVO goodsVO = goodsService.getGoodsVOByGoodsId(goodsId);
+        Integer miaoshaStatus;
+        Integer remainSeconds;
 
-            model.addAttribute("goods", goodsVO);
-
-            long startAt = goodsVO.getStartDate().getTime();
-            long endAt = goodsVO.getEndDate().getTime();
-            long now = System.currentTimeMillis();
-
-            int miaoshaStatus;
-            long remainSeconds;
-
-            if (now < startAt) {
-                log.info("秒杀还没开始");
-                // 秒杀还没开始
-                miaoshaStatus = 0;
-                remainSeconds = (startAt - now) / 1000;
-            } else if (now > endAt) {
-                log.info("秒杀已经结束");
-                // 秒杀已经结束
-                miaoshaStatus = 2;
-                remainSeconds = -1;
-            } else {
-                log.info("正在进行");
-                // 秒杀正在进行
-                miaoshaStatus = 1;
-                remainSeconds = 0;
-            }
-
-            model.addAttribute("miaoshaStatus", miaoshaStatus);
-            model.addAttribute("remainSeconds", remainSeconds);
-
-            model.addAttribute("user", user);
-
-            goodsDetailHtml = generatePageHtml(request, response, model, "goods_detail", GoodsKey.goodsDetailKey,
-                    String.valueOf(goodsId));
+        if (now < startAt) {
+            log.info("秒杀还没开始");
+            miaoshaStatus = 0;
+            remainSeconds = (int) ((startAt - now) / 1000);
+        } else if (now > endAt) {
+            log.info("秒杀已经结束");
+            miaoshaStatus = 2;
+            remainSeconds = -1;
+        } else {
+            log.info("正在进行");
+            miaoshaStatus = 1;
+            remainSeconds = 0;
         }
 
-        return goodsDetailHtml;
+        GoodsDetailVO goodsDetailVO = new GoodsDetailVO()
+                .setGoods(goodsVO)
+                .setMiaoshaStatus(miaoshaStatus)
+                .setRemainSeconds(remainSeconds)
+                .setUser(user);
+
+        log.info("结果：{}", goodsDetailVO);
+
+        return resultService.success(goodsDetailVO);
     }
 
 

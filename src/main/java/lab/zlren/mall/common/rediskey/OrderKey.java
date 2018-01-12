@@ -6,7 +6,9 @@ package lab.zlren.mall.common.rediskey;
  */
 public class OrderKey extends BasePrefix {
 
-    public OrderKey(int expireSeconds, String prefix) {
-        super(expireSeconds, prefix);
+    private OrderKey(String prefix) {
+        super(prefix);
     }
+
+    public static OrderKey miaoshaOrderKey = new OrderKey("miaosha");
 }

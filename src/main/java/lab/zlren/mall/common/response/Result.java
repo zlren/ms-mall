@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 @Data
 @Slf4j
 public class Result<T> extends CodeMsg {
+
     private T data;
 
     public Result(CodeMsg codeMsg, T data) {
@@ -23,5 +24,9 @@ public class Result<T> extends CodeMsg {
     private Result(Integer code, String msg, T data) {
         super(code, msg);
         this.data = data;
+    }
+
+    public Result(CodeMsg codeMsg) {
+        this(codeMsg, null);
     }
 }

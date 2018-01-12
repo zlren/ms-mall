@@ -2,8 +2,8 @@ server:
   port: 6788
 
 logging:
-  level: error
-  level.lab.zlren.mall.mapper: error
+  level: info
+  level.lab.zlren.mall.mapper: debug
 
 spring:
   datasource:
@@ -35,3 +35,13 @@ redis:
   poolMaxTotal: 10
   poolMaxIdle: 10
   poolMaxWait: 3
+
+# static
+spring.resources:
+  add-mappings: true
+  cache-period: 3600
+  chain.cache: true
+  chain.enabled: true
+  chain.gzipped: true
+  chain.html-application-cache: true
+  static-locations: classpath:/static/

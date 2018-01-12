@@ -125,8 +125,10 @@ public class UserService extends ServiceImpl<UserMapper, User> {
         User userForUpdate = new User().setId(userId).setPassword(newPassword);
         updateById(userForUpdate);
 
-        // 缓存更新
-        // id缓存直接删掉
+        // 缓存更新，更新的逻辑是这样的：先把新的数据更新到数据库，再让缓存失效
+        // 为什么这样做？换过来行吗？
+        // 如果先让缓存失效，在新的数据还没有更新到数据库里面的时候来了一个读请求，旧的数据库数据就到了缓存里，随后数据库更新，这样二者不一致了
+        // id缓存失效
         redisService.del(UserKey.getById, String.valueOf(userId));
         // token缓存要更新，否则就是未登录了
         redisService.set(TokenKey.tokenKey, token, user.setPassword(newPassword));

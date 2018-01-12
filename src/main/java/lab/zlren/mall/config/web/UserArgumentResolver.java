@@ -58,7 +58,7 @@ public class UserArgumentResolver implements HandlerMethodArgumentResolver {
         User user = userService.getUserByTokenFromRedis(response, token);
 
         if (user != null) {
-            log.info("当前用户：{}", user);
+            // log.info("当前用户：{}", user);
             return user;
         }
 
