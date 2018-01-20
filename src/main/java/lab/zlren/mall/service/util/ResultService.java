@@ -35,6 +35,17 @@ public class ResultService {
     }
 
     /**
+     * 成功
+     *
+     * @param codeMsg
+     * @return
+     * @param <T>
+     */
+    public <T> Result<T> success(CodeMsg codeMsg) {
+        return new Result<>(codeMsg);
+    }
+
+    /**
      * 错误
      *
      * @param codeMsg 具体错误信息

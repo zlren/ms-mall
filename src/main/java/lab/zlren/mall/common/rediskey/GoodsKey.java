@@ -22,6 +22,17 @@ public class GoodsKey extends BasePrefix {
         super(expire, prefix);
     }
 
+    /**
+     * 永不过期
+     *
+     * @param prefix 前缀
+     */
+    private GoodsKey(String prefix) {
+        super(prefix);
+    }
+
     public static GoodsKey goodsListKey = new GoodsKey(GOODS_EXPIRE, "goodsList");
     public static GoodsKey goodsDetailKey = new GoodsKey(GOODS_EXPIRE, "goodsDetail");
+    public static GoodsKey miaoshaGoodsStock = new GoodsKey("miaoshaGoodsStock");
+    public static GoodsKey miaoshaGoodsOver = new GoodsKey("miaoshaGoodsOver");
 }

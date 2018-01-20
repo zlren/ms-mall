@@ -34,6 +34,7 @@ public abstract class BasePrefix implements KeyPrefix {
 
     /**
      * 真正的前缀是：类名:二级名:值
+     *
      * @return
      */
     @Override

@@ -46,6 +46,7 @@ public class CodeMsg {
      */
     public static CodeMsg MIAOSHA_OVER = new CodeMsg(500200, "商品已经秒杀完毕，库存不足");
     public static CodeMsg MIAOSHA_REPEATED = new CodeMsg(500200, "不能重复秒杀");
+    public static CodeMsg LOADING = new CodeMsg(0, "排队中");
 
     public CodeMsg fillArgs(Object... args) {
         int code = this.code;

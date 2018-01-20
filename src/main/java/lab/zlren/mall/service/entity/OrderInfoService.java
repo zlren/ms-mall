@@ -20,9 +20,11 @@ public class OrderInfoService extends ServiceImpl<OrderInfoMapper, OrderInfo> {
     private RedisService redisService;
 
     /**
-     * @param id
-     * @param goodsId
-     * @return
+     * 使用redis判重
+     *
+     * @param id      userid
+     * @param goodsId 商品id
+     * @return 是否已经购买
      */
     public MiaoshaOrder getMiaoshaOrderByUserIdGoodsId(Long id, Long goodsId) {
         return redisService.get(OrderKey.miaoshaOrderKey, id + "_" + goodsId, MiaoshaOrder.class);

@@ -16,12 +16,13 @@ public interface GoodsMapper extends BaseMapper<Goods> {
 
     /**
      * goods表左连接miaosha_goods表
+     * goods表的id和miaosha_goods表的goods_id是一回事，miaosha_goods表的id无意义
      *
      * @return 商品列表
      */
     @Select("select g.*, mg.stock_count, mg.start_date, mg.end_date, mg.miaosha_price " +
             "from miaosha_goods mg left join goods g " +
-            "on mg.goods_id = g.id")
+            "on g.id = mg.goods_id")
     List<GoodsVO> selectGoodsListBySql();
 
     /**

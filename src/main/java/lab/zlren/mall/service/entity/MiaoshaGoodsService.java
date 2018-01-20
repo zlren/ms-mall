@@ -1,7 +1,7 @@
 package lab.zlren.mall.service.entity;
 
-import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import lab.zlren.mall.common.rediskey.GoodsKey;
 import lab.zlren.mall.common.rediskey.OrderKey;
 import lab.zlren.mall.common.vo.GoodsVO;
 import lab.zlren.mall.entity.MiaoshaGoods;
@@ -9,6 +9,7 @@ import lab.zlren.mall.entity.MiaoshaOrder;
 import lab.zlren.mall.entity.OrderInfo;
 import lab.zlren.mall.mapper.MiaoshaGoodsMapper;
 import lab.zlren.mall.service.util.RedisService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +21,7 @@ import java.util.Date;
  * @date 2018-01-09
  */
 @Service
+@Slf4j
 public class MiaoshaGoodsService extends ServiceImpl<MiaoshaGoodsMapper, MiaoshaGoods> {
 
     @Autowired
@@ -30,9 +32,6 @@ public class MiaoshaGoodsService extends ServiceImpl<MiaoshaGoodsMapper, Miaosha
 
     @Autowired
     private OrderInfoService orderInfoService;
-
-    @Autowired
-    private GoodsService goodsService;
 
     @Autowired
     private RedisService redisService;
@@ -50,42 +49,109 @@ public class MiaoshaGoodsService extends ServiceImpl<MiaoshaGoodsMapper, Miaosha
     @Transactional(rollbackFor = Exception.class)
     public OrderInfo miaosha(Long userId, GoodsVO goodsVO) {
 
-        // miaosha-goods减库存
-        MiaoshaGoods miaoshaGoods = new MiaoshaGoods().setStockCount(goodsVO.getStockCount() - 1);
-        EntityWrapper<MiaoshaGoods> ew = new EntityWrapper<>();
-        ew.eq("goods_id", goodsVO.getId());
-        ew.gt(true, "stock_count", 0);
-        miaoshaGoodsService.update(miaoshaGoods, ew);
+        // TODO：库存只考虑了miaosha_goods表，列是stock_count
 
-        // // goods减库存
-        // Goods goods = new Goods().setGoodsStock(goodsVO.getGoodsStock() - 1);
-        // EntityWrapper<Goods> ew2 = new EntityWrapper<>();
-        // ew2.eq("id", goodsVO.getId());
-        // ew2.gt(true, "goods_stock", 0);
-        // goodsService.update(goods, ew2);
+        // 减库存
+        boolean update = reduceStock(goodsVO.getId());
 
-        // 写入order
-        OrderInfo orderInfo = new OrderInfo()
-                .setCreateDate(new Date())
-                .setDeliveryAddId(1L)
-                .setGoodsCount(1)
-                .setGoodsId(goodsVO.getId())
-                .setGoodsName(goodsVO.getGoodsName())
-                .setGoodsPrice(goodsVO.getMiaoshaPrice())
-                .setStatus(0)
-                .setUserId(userId);
-        orderInfoService.insert(orderInfo);
+        if (update) {
 
-        // 写入miaosha-order
-        MiaoshaOrder miaoshaOrder = new MiaoshaOrder()
-                .setOrderId(orderInfo.getId())
-                .setUserId(userId)
-                .setGoodsId(goodsVO.getId());
-        miaoshaOrderService.insert(miaoshaOrder);
+            // 写入order
+            OrderInfo orderInfo = new OrderInfo()
+                    .setCreateDate(new Date())
+                    .setDeliveryAddId(1L)
+                    .setGoodsCount(1)
+                    .setGoodsId(goodsVO.getId())
+                    .setGoodsName(goodsVO.getGoodsName())
+                    .setGoodsPrice(goodsVO.getMiaoshaPrice())
+                    .setStatus(0)
+                    .setUserId(userId);
+            orderInfoService.insert(orderInfo);
 
-        // 写入redis的是miaoshaOrder
-        redisService.set(OrderKey.miaoshaOrderKey, userId + "_" + goodsVO.getId(), miaoshaOrder);
+            // orderInfo插入完成以后会完成id回填，orderInfo的id和miaoshaOrder的orderId是一回事
 
-        return orderInfo;
+            // 写入miaosha-order
+            MiaoshaOrder miaoshaOrder = new MiaoshaOrder()
+                    .setOrderId(orderInfo.getId())
+                    .setUserId(userId)
+                    .setGoodsId(goodsVO.getId());
+            miaoshaOrderService.insert(miaoshaOrder);
+
+            // 写入redis的是miaoshaOrder
+            redisService.set(OrderKey.miaoshaOrderKey, userId + "_" + goodsVO.getId(), miaoshaOrder);
+
+            log.info("下单成功，订单详情是{}", orderInfo);
+
+            return orderInfo;
+        }
+
+        setGoodsOver(goodsVO.getId());
+        return null;
+    }
+
+
+    /**
+     * 数据库减库存
+     *
+     * @param goodsId 秒杀商品id
+     * @return 剪完库存之后的数量
+     */
+    private boolean reduceStock(Long goodsId) {
+        // reduceStock的结果是影响的行数，大于0表示操作成功了
+        return this.baseMapper.reduceStock(goodsId) > 0;
+    }
+
+    /**
+     * 使用redis标识某个商品已经卖光了
+     *
+     * @param id goodsId
+     */
+    private void setGoodsOver(Long id) {
+        redisService.set(GoodsKey.miaoshaGoodsOver, String.valueOf(id), 0);
+    }
+
+    /**
+     * 商品充足
+     *
+     * @param id goodsId
+     */
+    public void setGoodsEnough(Long id) {
+        redisService.set(GoodsKey.miaoshaGoodsOver, String.valueOf(id), 1);
+    }
+
+    /**
+     * 查询是否卖光了
+     *
+     * @param id goodsId
+     * @return true表示卖光了
+     */
+    private boolean getGoodsOver(Long id) {
+        Integer over = redisService.get(GoodsKey.miaoshaGoodsOver, String.valueOf(id), Integer.class);
+        return over == 0;
+    }
+
+    /**
+     * 查询秒杀结果
+     *
+     * @param userId  用户
+     * @param goodsId goodsId
+     * @return 结果
+     */
+    public Long getMiaoshaResult(Long userId, Long goodsId) {
+
+        MiaoshaOrder miaoshaOrder = orderInfoService.getMiaoshaOrderByUserIdGoodsId(userId, goodsId);
+
+        if (miaoshaOrder != null) {
+            // 秒杀成功，订单id
+            return miaoshaOrder.getId();
+        } else {
+            if (getGoodsOver(goodsId)) {
+                // 失败
+                return -1L;
+            } else {
+                // 排队中
+                return 0L;
+            }
+        }
     }
 }

@@ -15,6 +15,21 @@ spring:
     cache: false
     prefix: classpath:/templates/
     suffix: .html
+  rabbitmq:
+    host: 10.109.246.70
+    username: guest
+    password: guest
+    virtual-host: /
+    listener:
+      simple:
+        max-concurrency: 10
+        concurrency: 10
+        prefetch: 1
+        auto-startup: true
+        default-requeue-rejected: true
+    template:
+      retry:
+        enabled: true
 
 mybatis-plus:
   configuration:
