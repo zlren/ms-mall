@@ -35,4 +35,6 @@ public class GoodsKey extends BasePrefix {
     public static GoodsKey goodsDetailKey = new GoodsKey(GOODS_EXPIRE, "goodsDetail");
     public static GoodsKey miaoshaGoodsStock = new GoodsKey("miaoshaGoodsStock");
     public static GoodsKey miaoshaGoodsOver = new GoodsKey("miaoshaGoodsOver");
+    public static GoodsKey miaoshaGoodsPath = new GoodsKey(60, "miaoshaGoodsPath");
+    public static GoodsKey miaoshaVerifyCode = new GoodsKey(300, "miaoshaVerifyCode");
 }
