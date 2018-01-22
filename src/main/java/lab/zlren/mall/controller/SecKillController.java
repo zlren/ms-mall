@@ -5,6 +5,7 @@ import lab.zlren.mall.common.response.CodeMsg;
 import lab.zlren.mall.common.response.Result;
 import lab.zlren.mall.common.vo.GoodsVO;
 import lab.zlren.mall.common.vo.MiaoshaRequest;
+import lab.zlren.mall.config.access.AccessLimit;
 import lab.zlren.mall.entity.OrderInfo;
 import lab.zlren.mall.entity.User;
 import lab.zlren.mall.service.entity.GoodsService;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.websocket.server.PathParam;
 import java.awt.image.BufferedImage;
@@ -131,7 +133,9 @@ public class SecKillController implements InitializingBean {
      */
     @GetMapping("path")
     @ResponseBody
-    public Result<String> getMiaoshaPath(User user, @RequestParam Long goodsId, @PathParam("verifyCode") Integer verifyCode) {
+    @AccessLimit(seconds = 5, maxCount = 5)
+    public Result<String> getMiaoshaPath(HttpServletRequest request, User user, @RequestParam Long goodsId,
+                                         @PathParam("verifyCode") Integer verifyCode) {
 
         if (!miaoshaGoodsService.checkVerifyCode(user, goodsId, verifyCode)) {
             // 验证码错误

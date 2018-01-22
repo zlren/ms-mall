@@ -24,6 +24,8 @@ public class CodeMsg {
     public static CodeMsg PARAMS_ERROR = new CodeMsg(5001, "参数异常");
     public static CodeMsg VALID_BIND_ERROR = new CodeMsg(5002, "参数绑定异常：%s");
     public static CodeMsg JSON_ERROR = new CodeMsg(5003, "JSON转换错误");
+    public static CodeMsg ACCESS_COUNT_LIMIT = new CodeMsg(5003, "访问过于频繁");
+
 
     /**
      * 鉴权模块

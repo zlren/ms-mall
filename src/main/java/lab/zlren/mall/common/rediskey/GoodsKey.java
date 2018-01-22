@@ -31,6 +31,15 @@ public class GoodsKey extends BasePrefix {
         super(prefix);
     }
 
+    /**
+     * 记录请求次数，限流防刷
+     *
+     * @param expire
+     */
+    public static GoodsKey miaoshaAccessCount(Integer expire) {
+        return new GoodsKey(expire, "miaoshaAccessCount");
+    }
+
     public static GoodsKey goodsListKey = new GoodsKey(GOODS_EXPIRE, "goodsList");
     public static GoodsKey goodsDetailKey = new GoodsKey(GOODS_EXPIRE, "goodsDetail");
     public static GoodsKey miaoshaGoodsStock = new GoodsKey("miaoshaGoodsStock");
